@@ -1,0 +1,7 @@
+node_modules/
+dist/
+tmp/
+.DS_Store
+src/.DS_Store
+src/img/.DS_Store
+src/tmp/.DS_Store

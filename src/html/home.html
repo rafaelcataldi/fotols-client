@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="../css/styles.css"> <!-- Link to the external CSS -->
+    <script src="../js/loadHeader.js"></script> <!-- Load header dynamically -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .home-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            margin: auto;
+        }
+        .home-container h2 {
+            margin-bottom: 20px;
+        }
+        .home-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .home-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="headerContainer"></div> <!-- Header container for dynamic loading -->
+
+    <div class="home-container">
+        <h2>Welcome</h2>
+        <button onclick="viewPacks()">View Uploaded Packs</button>
+        <button onclick="uploadPack()">Upload a Pack</button>
+    </div>
+    
+    <script>
+        function viewPacks() {
+            // Redirect to the page where uploaded packs are shown
+            window.location.href = 'view-packs.html';
+        }
+
+        function uploadPack() {
+            // Redirect to the event details page to start the upload process
+            window.location.href = 'event-details.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+body {
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.header .user-info {
+    display: flex;
+    align-items: center;
+}
+
+.header .user-info span {
+    margin-right: 10px;
+}
+
+.header button {
+    padding: 5px 10px;
+    background-color: #ff4c4c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.header button:hover {
+    background-color: #cc0000;
+}
+
+.details-container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.details-container h2 {
+    margin-bottom: 20px;
+}
+
+.details-container select, 
+.details-container input[type="text"], 
+.details-container input[type="number"],
+.details-container input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.details-container input[type="checkbox"] {
+    margin: 10px 0;
+}
+
+.details-container button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.details-container button:hover {
+    background-color: #0056b3;
+}
+
+.details-container .secondary-button {
+    background-color: #6c757d;
+}
+
+.details-container .secondary-button:hover {
+    background-color: #5a6268;
+}
+
+.status {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #333;
+}

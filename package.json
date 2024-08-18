@@ -1,0 +1,13 @@
+{
+  "name": "fotols-uploader",
+  "version": "1.0.0",
+  "main": "src/js/index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "axios": "^1.7.4",
+    "electron": "^31.4.0",
+    "sharp": "^0.33.5"
+  }
+}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotols Uploader - Event Details</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="../js/loadHeader.js"></script>
+    <style>
+        .details-container {
+            position: relative;
+        }
+
+        .details-container button {
+            padding: 15px 20px;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .details-container .secondary-button {
+            background-color: #6c757d;
+            padding: 10px 15px;
+            width: auto;
+            position: absolute;
+        }
+
+        #backButton {
+            bottom: 20px;
+            left: 20px;
+        }
+
+        #stopButton {
+            bottom: 70px;
+            left: 20px;
+            display: none;
+        }
+
+        .details-container .secondary-button:hover {
+            background-color: #5a6268;
+        }
+
+        #stopButton.visible {
+            display: block;
+        }
+
+        .details-container input:disabled,
+        .details-container select:disabled,
+        .details-container button:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div id="headerContainer"></div>
+    <div id="usernameDisplay" style="position: absolute; top: 20px; right: 20px;">Guest</div>
+
+    <div class="details-container">
+        <h2>Enter Event Details</h2>
+        <select id="eventSelect">
+            <option value="">Select an event</option>
+            <!-- Populate this with event options dynamically -->
+        </select>
+        <input type="text" id="description" placeholder="Description">
+        <input type="text" id="tag" placeholder="Tag">
+        <label>
+            <input type="checkbox" id="freeCheckbox" checked> Free
+        </label>
+        <input type="number" id="price" placeholder="Price" disabled>
+        <input type="file" id="directoryInput" webkitdirectory directory multiple>
+        <div id="fileCount" class="status">No directory selected</div>
+        <button id="processButton">Process Images</button>
+        <button id="stopButton" class="secondary-button">Stop</button>
+        <button id="backButton" class="secondary-button">Back</button>
+        <div id="status" class="status"></div>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script>
+        const { ipcRenderer } = require('electron');
+        let processing = false;
+        let events = [];
+
+        async function loadEvents() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${baseUrl}/getEvents`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    events = await response.json();
+                    populateEventSelect(events);
+                } else {
+                    console.error('Failed to fetch events.');
+                }
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        }
+
+        function populateEventSelect(events) {
+            const eventSelect = document.getElementById('eventSelect');
+            events.forEach(event => {
+                const option = document.createElement('option');
+                option.value = event.id;
+                option.textContent = event.name;
+                option.dataset.price = event.photoPrice || 0;
+                eventSelect.appendChild(option);
+            });
+        }
+
+        function disableInputs(disable) {
+            document.getElementById('eventSelect').disabled = disable;
+            document.getElementById('description').disabled = disable;
+            document.getElementById('tag').disabled = disable;
+            document.getElementById('freeCheckbox').disabled = disable;
+            document.getElementById('price').disabled = disable || document.getElementById('freeCheckbox').checked;
+            document.getElementById('directoryInput').disabled = disable;
+            document.getElementById('backButton').disabled = disable;
+        }
+
+        async function processImages() {
+            const eventId = document.getElementById('eventSelect').value;
+            const description = document.getElementById('description').value;
+            const tag = document.getElementById('tag').value;
+            const isFree = document.getElementById('freeCheckbox').checked;
+            const directory = Array.from(document.getElementById('directoryInput').files)
+                .map(file => file.path)
+                .filter(filePath => filePath);
+
+            console.log('Directory paths before sending to main process:', directory);
+
+            if (!eventId || directory.length === 0) {
+                alert('Please select an event and directory.');
+                return;
+            }
+
+            processing = true;
+            disableInputs(true);
+            document.getElementById('stopButton').classList.add('visible');
+            document.getElementById('status').textContent = 'Processing...';
+
+            try {
+                ipcRenderer.send('process-images', { isFree, directory, eventId, description, tag });
+
+                ipcRenderer.on('processing-status', (event, status) => {
+                    document.getElementById('status').textContent = status.message;
+                });
+
+                ipcRenderer.on('processing-complete', (event, message) => {
+                    processing = false;
+                    document.getElementById('stopButton').classList.remove('visible');
+                    disableInputs(false);
+                    document.getElementById('status').textContent = message;
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('status').textContent = 'An error occurred during processing.';
+                processing = false;
+                document.getElementById('stopButton').classList.remove('visible');
+                disableInputs(false);
+            }
+        }
+
+        function stopProcessing() {
+            ipcRenderer.send('stop-processing');
+            processing = false;
+        }
+
+        function goBack() {
+            if (!processing) {
+                window.location.href = 'home.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHeader();
+            loadEvents();
+
+            const username = localStorage.getItem('username') || 'Guest';
+            document.getElementById('usernameDisplay').textContent = username;
+
+            document.getElementById('processButton').addEventListener('click', processImages);
+            document.getElementById('stopButton').addEventListener('click', stopProcessing);
+            document.getElementById('backButton').addEventListener('click', goBack);
+
+            document.getElementById('eventSelect').addEventListener('change', function() {
+                const selectedEvent = events.find(event => event.id == this.value);
+                if (selectedEvent) {
+                    const priceInput = document.getElementById('price');
+                    if (selectedEvent.photoPrice > 0) {
+                        document.getElementById('freeCheckbox').checked = false;
+                        priceInput.disabled = false;
+                        priceInput.value = selectedEvent.photoPrice;
+                    } else {
+                        document.getElementById('freeCheckbox').checked = true;
+                        priceInput.disabled = true;
+                        priceInput.value = '';
+                    }
+                }
+            });
+
+            document.getElementById('freeCheckbox').addEventListener('change', function() {
+                document.getElementById('price').disabled = this.checked;
+            });
+
+            document.getElementById('directoryInput').addEventListener('change', function() {
+                const fileCount = this.files.length;
+                document.getElementById('fileCount').textContent = `${fileCount} files selected`;
+            });
+        });
+    </script>
+</body>
+</html>

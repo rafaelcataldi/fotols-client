@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uploaded Packs</title>
+    <link rel="stylesheet" href="../css/styles.css"> <!-- Link to the external CSS -->
+    <script src="../js/loadHeader.js"></script> <!-- Load header dynamically -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .packs-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh; /* Ensure the container doesn't take more than 80% of the viewport height */
+            position: relative; /* For positioning the back button */
+            display: flex;
+            flex-direction: column; /* Use flexbox to layout the container */
+            margin: auto; /* Center the container */
+        }
+        .packs-container h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .pack-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+            max-height: 60vh; /* Limit the height of the list */
+            overflow-y: auto; /* Add scrolling to the list */
+            flex-grow: 1; /* Allow the list to take up available space */
+        }
+        .pack-list li {
+            background-color: #e9ecef;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .packs-container button {
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            align-self: flex-start; /* Align button to the left */
+            font-size: 14px; /* Smaller font size */
+        }
+        .packs-container button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div id="headerContainer"></div> <!-- Header container for dynamic loading -->
+
+    <div class="packs-container">
+        <h2>Uploaded Packs</h2>
+        <ul class="pack-list" id="packList">
+            <!-- Packs will be populated here -->
+        </ul>
+        <button onclick="goHome()">Back to Home</button>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script>
+        async function loadPacks() {
+            const token = localStorage.getItem('authToken');
+            try {
+                const response = await fetch(`${baseUrl}/getUploadedPacks`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const packs = await response.json();
+
+                if (response.ok) {
+                    const packList = document.getElementById('packList');
+                    packList.innerHTML = ''; // Clear previous list
+
+                    packs.forEach(pack => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `Pack: ${pack.name} - ${pack.description}`;
+                        packList.appendChild(listItem);
+                    });
+                } else {
+                    alert('Failed to load packs.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while loading packs.');
+            }
+        }
+
+        function goHome() {
+            window.location.href = 'home.html';
+        }
+
+        window.onload = function() {
+            loadHeader(); // Load the header
+            loadPacks();  // Load packs when the page loads
+        };
+    </script>
+</body>
+</html>
