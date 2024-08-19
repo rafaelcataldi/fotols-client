@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { processImages } = require('./imageProcessor');
+const { baseUrl } = require('./config'); // Import baseUrl
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -32,7 +33,7 @@ app.on('window-all-closed', () => {
     }
 });
 
-ipcMain.on('process-images', async (event, { isFree, directory, eventId, description, tag }) => {
+ipcMain.on('process-images', async (event, { isFree, directory, eventId, description, tag, email }) => {
     const imageFolderRoot = path.join(__dirname, '../tmp');
     const watermarkPath = path.join(__dirname, '../img/watermarks/watermark1.png');
 
@@ -50,7 +51,25 @@ ipcMain.on('process-images', async (event, { isFree, directory, eventId, descrip
         console.log("Processed directory paths:", processedDirectory);
 
         if (processedDirectory.length > 0) {
-            await processImages(processedDirectory, imageFolderRoot, watermarkPath, !isFree);
+
+            const price = 0; // Replace with dynamic price, e.g., from the form
+            const name = description;
+            const date = '';
+            const place = ''; // Replace with dynamic place
+            const tags = tag;
+
+            const uploadPackDetails = {
+                eventId,
+                email,
+                price,
+                name,
+                date,
+                place,
+                tags
+            };
+
+            const uploadPackId = await processImages(processedDirectory, imageFolderRoot, watermarkPath, !isFree, uploadPackDetails);
+            console.log('Upload Pack created with ID:', uploadPackId);
         } else {
             console.error('No valid files to process.');
         }

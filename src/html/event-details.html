@@ -86,7 +86,7 @@
         async function loadEvents() {
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch(`${baseUrl}/getEvents`, {
+                const response = await fetch(`${baseUrl}/api/getEvents`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -128,6 +128,7 @@
 
         async function processImages() {
             const eventId = document.getElementById('eventSelect').value;
+            const email = localStorage.getItem('email');
             const description = document.getElementById('description').value;
             const tag = document.getElementById('tag').value;
             const isFree = document.getElementById('freeCheckbox').checked;
@@ -148,7 +149,7 @@
             document.getElementById('status').textContent = 'Processing...';
 
             try {
-                ipcRenderer.send('process-images', { isFree, directory, eventId, description, tag });
+                ipcRenderer.send('process-images', { isFree, directory, eventId, description, tag , email});
 
                 ipcRenderer.on('processing-status', (event, status) => {
                     document.getElementById('status').textContent = status.message;

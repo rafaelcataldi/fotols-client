@@ -85,7 +85,7 @@
             loginButton.disabled = true;
 
             try {
-                const response = await fetch(`${baseUrl}/login`, {
+                const response = await fetch(`${baseUrl}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -120,7 +120,7 @@
 
         async function fetchUserDetails(token) {
             try {
-                const userResponse = await fetch(`${baseUrl}/user`, {
+                const userResponse = await fetch(`${baseUrl}/api/user`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,

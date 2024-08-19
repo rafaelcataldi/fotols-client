@@ -1,12 +1,14 @@
 const fs = require('fs');
 const sharp = require('sharp');
 const path = require('path');
+const axios = require('axios');
+const { baseUrl } = require('./config'); // Import baseUrl from config.js
 
 const thumbPx = 250;
 const fullPx = 800;
 const originalMaxSize = 4000;
 
-async function processImages(imageFiles, imageFolderRoot, watermarkPath, applyWatermarkFlag) {
+async function processImages(imageFiles, imageFolderRoot, watermarkPath, applyWatermarkFlag, uploadPackDetails) {
     const fullFolder = path.join(imageFolderRoot, 'full');
     const thumbFolder = path.join(imageFolderRoot, 'thumb');
     const originalFolder = path.join(imageFolderRoot, 'original');
@@ -29,7 +31,6 @@ async function processImages(imageFiles, imageFolderRoot, watermarkPath, applyWa
     }
 
     const tasks = imageFiles.map(async (filePath, index) => {
-        // Skip non-image files
         if (!filePath.match(/\.(jpg|jpeg|png|gif)$/i)) {
             console.warn(`Skipping non-image file: ${filePath}`);
             return;
@@ -71,6 +72,20 @@ async function processImages(imageFiles, imageFolderRoot, watermarkPath, applyWa
 
     await Promise.all(tasks);
     console.log('All images processed successfully.');
+
+    // After processing images, create the upload pack
+    const uploadPackId = await uploadPack(
+        uploadPackDetails.eventId,
+        uploadPackDetails.email,
+        uploadPackDetails.price,
+        uploadPackDetails.name,
+        uploadPackDetails.date,
+        uploadPackDetails.place,
+        uploadPackDetails.tags
+    );
+
+    console.log('Upload Pack created with ID:', uploadPackId);
+    return uploadPackId;
 }
 
 async function prepareWatermark(watermarkPath, imageFolderRoot) {
@@ -117,10 +132,42 @@ async function adjustQualityToFitFileSize(buffer, outputPath, maxFileSizeKB) {
             console.log(`Achieved target size of ${maxFileSizeKB}KB at quality ${quality} for ${path.basename(outputPath)}`);
             return;
         }
-        
         quality -= 5;
     }
     console.log(`Could not reduce file size to below ${maxFileSizeKB}KB for ${path.basename(outputPath)}`);
+}
+
+// Upload Pack function to be used after resizing images
+async function uploadPack(eventId, email, price, name, date, place, tags) {
+    const fotolsCode = '1eventols23'; // Replace with your actual code
+
+    try {
+        const response = await axios.get(`${baseUrl}/uploader/uploadPack`, {
+            params: {
+                code: fotolsCode,
+                eventId: eventId,
+                email: email,
+                price: price,
+                name: name,
+                date: date,
+                place: place,
+                tags: tags
+            }
+        });
+
+        const uploadPackResponse = response.data;
+
+        if (uploadPackResponse && uploadPackResponse.uploadPackId) {
+            console.log("Upload Pack ID:", uploadPackResponse.uploadPackId);
+            return uploadPackResponse.uploadPackId;
+        } else {
+            throw new Error('Upload pack ID not found in response');
+        }
+
+    } catch (error) {
+        console.error("Failed to upload pack:", error);
+        throw error; // Optional: re-throw the error if you want calling functions to handle it
+    }
 }
 
 module.exports = {
