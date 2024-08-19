@@ -1,14 +1,37 @@
 const fs = require('fs');
-const sharp = require('sharp');
 const path = require('path');
 const axios = require('axios');
-const { baseUrl } = require('./config'); // Import baseUrl from config.js
+const sharp = require('sharp');
+const { baseUrl } = require('./config');
 
 const thumbPx = 250;
 const fullPx = 800;
 const originalMaxSize = 4000;
 
+// Function to clean the tmp folder
+function cleanTmpFolder(folderPath) {
+    return new Promise((resolve, reject) => {
+        if (fs.existsSync(folderPath)) {
+            fs.rm(folderPath, { recursive: true, force: true }, (err) => {
+                if (err) {
+                    console.error('Error cleaning tmp folder:', err);
+                    reject(err);
+                } else {
+                    console.log('Tmp folder cleaned.');
+                    resolve();
+                }
+            });
+        } else {
+            resolve();
+        }
+    });
+}
+
 async function processImages(imageFiles, imageFolderRoot, watermarkPath, applyWatermarkFlag, uploadPackDetails) {
+    // Clean the tmp folder at the start of the process
+    const tmpFolderPath = path.join(__dirname, '../tmp');
+    await cleanTmpFolder(tmpFolderPath); // Ensure the cleaning is completed before proceeding
+
     const fullFolder = path.join(imageFolderRoot, 'full');
     const thumbFolder = path.join(imageFolderRoot, 'thumb');
     const originalFolder = path.join(imageFolderRoot, 'original');
@@ -87,6 +110,7 @@ async function processImages(imageFiles, imageFolderRoot, watermarkPath, applyWa
     console.log('Upload Pack created with ID:', uploadPackId);
     return uploadPackId;
 }
+
 
 async function prepareWatermark(watermarkPath, imageFolderRoot) {
     const modifiedWatermarkPath = path.join(imageFolderRoot, 'modified_watermark.png');
